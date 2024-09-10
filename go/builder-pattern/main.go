@@ -12,16 +12,18 @@ type DynamoDbConfig struct {
 	LastEvaluatedKey string
 }
 
-func NewDynamoDbProvider() *DynamoDbConfig {
+func NewDynamoDbBuilder() *DynamoDbConfig {
 	return &DynamoDbConfig{Limit: 50}
 }
 
-func (d *DynamoDbConfig) SetLimit(limit int) {
+func (d *DynamoDbConfig) SetLimit(limit int) *DynamoDbConfig {
 	d.Limit = limit
+	return d
 }
 
-func (d *DynamoDbConfig) SetLastEvaluatedKey(lastEvaluatedKey string) {
+func (d *DynamoDbConfig) SetLastEvaluatedKey(lastEvaluatedKey string) *DynamoDbConfig {
 	d.LastEvaluatedKey = lastEvaluatedKey
+	return d
 }
 
 func (d *DynamoDbConfig) GetItemBySK(dp DynamoDbProvider, pk string, sk string) map[string]interface{} {
@@ -47,6 +49,9 @@ func (d *DynamoDbConfig) GetItemsByPK(dp DynamoDbProvider, pk string) []map[stri
 
 	allItems := []map[string]interface{}{item1, item2}
 
+	// We can get paginated data by calling recursively this method using LastEvaluatedKey and Limit
+	// d.SetLastEvaluatedKey("some-key")
+
 	limit := d.Limit
 	if limit > 0 && limit < len(allItems) {
 		return allItems[:limit]
@@ -56,7 +61,7 @@ func (d *DynamoDbConfig) GetItemsByPK(dp DynamoDbProvider, pk string) []map[stri
 }
 
 func main() {
-	dynamoDbProvider := NewDynamoDbProvider()
+	dynamoDbProvider := NewDynamoDbBuilder()
 	singleItem := dynamoDbProvider.GetItemBySK(dynamoDbProvider, "PK", "SK")
 	multipleItems := dynamoDbProvider.GetItemsByPK(dynamoDbProvider, "PK")
 	fmt.Printf("Single item simulated result %v\n", singleItem)
